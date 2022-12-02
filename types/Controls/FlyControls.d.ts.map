@@ -1,0 +1,1 @@
+{"version":3,"file":"FlyControls.d.ts","sourceRoot":"","sources":["../../src/Controls/FlyControls.js"],"names":[],"mappings":";AAiFA;;;;;;;;GAQG;AACH;IACI;;;;;;OAMG;IACH;QAH4B,YAAY,EAA7B,OAAO;QACU,gBAAgB,EAAjC,OAAO;OAmCjB;IA/BG,WAAgB;IAChB;sBANO,OAAO;0BACP,OAAO;MAKQ;IACtB,eAAqC;IACrC,gBAAsB;IACtB,kBAAmB;IAEnB,2BAA2B;IAC3B,2BAA2B;IAE3B,sBAAyB;IAwB7B,6BAEC;IAED,gDAqBC;CACJ"}
