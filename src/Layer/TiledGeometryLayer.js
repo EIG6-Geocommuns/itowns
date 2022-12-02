@@ -17,6 +17,7 @@ const boundingSphereCenter = new THREE.Vector3();
  * layer is a TiledGeometryLayer. Default is true. You should not change this,
  * as it is used internally for optimisation.
  *
+ * @extends GeometryLayer
  */
 class TiledGeometryLayer extends GeometryLayer {
     /**
@@ -40,7 +41,6 @@ class TiledGeometryLayer extends GeometryLayer {
      * then it is subdivided into 4 tiles with a zoom greater than 1.
      *
      * @constructor
-     * @extends GeometryLayer
      *
      * @param {string} id - The id of the layer, that should be unique. It is
      * not mandatory, but an error will be emitted if this layer is added a

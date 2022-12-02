@@ -9,6 +9,13 @@ import VectorTileParser from 'Parser/VectorTileParser';
 import Fetcher from 'Provider/Fetcher';
 import Cache from 'Core/Scheduler/Cache';
 
+/**
+ * @callback fetcher
+ * @param {string} url - TODO
+ * @param {RequestInit} [options={}] - TODO
+ * @returns {Promise<any>} - TODO
+ */
+
 export const supportedFetchers = new Map([
     ['image/x-bil;bits=32', Fetcher.textureFloat],
     ['geojson', Fetcher.json],
@@ -45,6 +52,9 @@ const noCache = { getByArray: () => {}, setByArray: a => a, clear: () => {} };
  *
  */
 class InformationsData {
+    /**
+     * @param {{crs: string}} options
+     */
     constructor(options) {
         /* istanbul ignore next */
         if (options.projection) {
@@ -81,6 +91,7 @@ let uid = 0;
  * To extend a Source, it is necessary to implement two functions:
  * `urlFromExtent` and `extentInsideLimit`.
  *
+ * @extends InformationsData
  * @property {boolean} isSource - Used to checkout whether this source is a
  * Source. Default is true. You should not change this, as it is used internally
  * for optimisation.
@@ -120,9 +131,12 @@ class Source extends InformationsData {
     /**
      * @param {Object} source - An object that can contain all properties of a
      * Source. Only the `url` property is mandatory.
+     * @param {string} source.crs - TODO
+     * @param {string} source.url - TODO
+     * @param {string=} source.format - TODO
+     * @param {fetcher} source.fetcher - TODO
      *
      * @constructor
-     * @extends InformationsData
      */
     constructor(source) {
         super(source);

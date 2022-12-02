@@ -42,6 +42,7 @@ function traverse(obj, callback) {
  * This property is used only if the layer is attached to [TiledGeometryLayer]{@link TiledGeometryLayer}.
  * @property {number} [zoom.min=0] - this is the minimum zoom from which it'll be visible.
  * This property is used only if the layer is attached to [TiledGeometryLayer]{@link TiledGeometryLayer}.
+ * @extends Layer
  */
 class GeometryLayer extends Layer {
     /**
@@ -49,7 +50,6 @@ class GeometryLayer extends Layer {
      * can be a layer of buildings extruded from a a WFS stream.
      *
      * @constructor
-     * @extends Layer
      *
      * @param {string} id - The id of the layer, that should be unique. It is
      * not mandatory, but an error will be emitted if this layer is added a

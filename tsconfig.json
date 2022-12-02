@@ -1,0 +1,40 @@
+{
+    "include": [
+        "src/Main.js",
+        "src/Utils/gui/Main.js"
+    ],
+    //"exclude": [
+    //    "types/**/*.d.ts", // Error when paths includes types, TOFIX
+    //],
+    "compilerOptions": {
+        /* Type Checking */
+        //"strict": "true", // Enable various type checking flags
+        /* Modules */
+        "baseUrl": ".", // Base directory to resolve non-absolute modules
+        "paths": { // Re-map imports to lookup locations relative to baseUrl
+            "*": ["src/*", "types/*"]
+        },
+        //"resolveJsonModule": "true", // Allow importing `.json` modules
+        /* Emit */
+        "declaration": true, // Generate `.d.ts` files
+        "declarationMap": true, // Generate source map for `.d.ts` files
+        "emitDeclarationOnly": true, // *Only* emit `.d.ts` files
+        //"noEmit": false, // Do not emit compiler output files
+        "outDir": "types", // `.js` and `.d.ts` will be emitted here
+        /* JavaScript Support */
+        "allowJs": true,
+        "checkJs": true, // Errors are reported in JS files
+        /* Interop Constraints */
+        "allowSyntheticDefaultImports": true,
+        // "esModuleInterop": true,
+        /* Language and Environment */
+        "lib": ["es2019", "dom"], // Other libs are allowed
+        "target": "es2018",
+        /* Debug */
+        //"explainFiles": true, // Explain why files are part of the compilation
+        //"extendedDiagnostics": true, // Performance diagnostic
+        //"listEmittedFiles": true, // print generated filenames
+        /* Completeness */
+        "skipLibCheck": true // Skip type checking of declaration files
+    }
+}

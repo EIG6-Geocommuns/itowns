@@ -170,7 +170,7 @@ export default {
      *
      * @param {string}  code    code is the projection's SRS code (only used internally by the Proj4js library)
      * @param {string}  proj4def is the Proj4 definition string for the projection to use
-     * @return {undefined}
+     * @return {void}
      */
     defs: (code, proj4def) => proj4.defs(code, proj4def),
 };

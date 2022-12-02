@@ -155,6 +155,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
         err => handlingError(err, node, layer, targetLevel, context.view));
 }
 
+// [QB] Apply Layer material of node elevation
 export function updateLayeredMaterialNodeElevation(context, layer, node, parent) {
     const material = node.material;
     if (!parent || !material) {

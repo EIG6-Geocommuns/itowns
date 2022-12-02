@@ -1,6 +1,7 @@
+/** @module GlobeView */
+
 import * as THREE from 'three';
 
-import View, { VIEW_EVENTS } from 'Core/View';
 import GlobeControls from 'Controls/GlobeControls';
 import Coordinates from 'Core/Geographic/Coordinates';
 
@@ -10,6 +11,7 @@ import CameraUtils from 'Utils/CameraUtils';
 
 import CRS from 'Core/Geographic/Crs';
 import { ellipsoidSizes } from 'Core/Math/Ellipsoid';
+import View, { VIEW_EVENTS } from '../View';
 
 /**
  * Fires when the view is completely loaded. Controls and view's functions can be called then.
@@ -64,12 +66,14 @@ export const GLOBE_VIEW_EVENTS = {
     COLOR_LAYERS_ORDER_CHANGED: VIEW_EVENTS.COLOR_LAYERS_ORDER_CHANGED,
 };
 
+/**
+ * @extends View
+ */
 class GlobeView extends View {
     /**
      * Creates a view of a globe.
      *
      * @constructor
-     * @extends View
      *
      * @example <caption><b>Instance GlobeView.</b></caption>
      * var viewerDiv = document.getElementById('viewerDiv');
@@ -89,9 +93,10 @@ class GlobeView extends View {
      *
      * @param {HTMLDivElement} viewerDiv - Where to attach the view and display it
      * in the DOM.
-     * @param {CameraTransformOptions|Extent} placement - An object to place view
-     * @param {object=} options - See options of {@link View}.
-     * @param {Object} options.controls - See options of {@link GlobeControls}
+     * @param {CameraUtils~CameraTransformOptions|Extent} placement - An object to place view
+     * @param {object} options - See options of {@link View}.
+     * @param {Object=} options.controls - See options of {@link GlobeControls}
+     * @param {module:CameraUtils~CameraTransformOptions} options.test -
      */
     constructor(viewerDiv, placement = {}, options = {}) {
         THREE.Object3D.DefaultUp.set(0, 0, 1);

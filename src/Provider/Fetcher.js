@@ -38,8 +38,8 @@ export default {
      * Wrapper over fetch to get some text.
      *
      * @param {string} url - The URL of the resources to fetch.
-     * @param {Object} options - Fetch options (passed directly to `fetch()`),
-     * see [the syntax for more information]{@link
+     * @param {RequestInit} options - Fetch options (passed directly to
+     * `fetch()`), see [the syntax for more information]{@link
      * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax}.
      *
      * @return {Promise<string>} Promise containing the text.
@@ -55,8 +55,8 @@ export default {
      * Little wrapper over fetch to get some JSON.
      *
      * @param {string} url - The URL of the resources to fetch.
-     * @param {Object} options - Fetch options (passed directly to `fetch()`),
-     * see [the syntax for more information]{@link
+     * @param {RequestInit} options - Fetch options (passed directly to
+     * `fetch()`), see [the syntax for more information]{@link
      * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax}.
      *
      * @return {Promise<Object>} Promise containing the JSON object.
@@ -72,8 +72,8 @@ export default {
      * Wrapper over fetch to get some XML.
      *
      * @param {string} url - The URL of the resources to fetch.
-     * @param {Object} options - Fetch options (passed directly to `fetch()`),
-     * see [the syntax for more information]{@link
+     * @param {RequestInit} options - Fetch options (passed directly to
+     * `fetch()`), see [the syntax for more information]{@link
      * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax}.
      *
      * @return {Promise<Document>} Promise containing the XML Document.

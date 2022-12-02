@@ -1,15 +1,18 @@
 import * as THREE from 'three';
 
-import View from 'Core/View';
 import CameraUtils from 'Utils/CameraUtils';
 
 import PlanarControls from 'Controls/PlanarControls';
 import PlanarLayer from './Planar/PlanarLayer';
 
+import View from '../View';
+
+/**
+ * @extends View
+ */
 class PlanarView extends View {
     /**
      * @constructor
-     * @extends View
      *
      * @example <caption><b>Enable WebGl 1.0 instead of WebGl 2.0.</b></caption>
      * var viewerDiv = document.getElementById('viewerDiv');

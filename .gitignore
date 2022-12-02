@@ -5,6 +5,7 @@
 
 /node_modules/
 /dist/
+/types/
 /potree/
 potree
 /lib/
@@ -12,3 +13,4 @@ potree
 coverage
 .nyc_output/
 /src/ThreeExtended/
+.un~

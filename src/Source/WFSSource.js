@@ -147,6 +147,7 @@ class WFSSource extends Source {
                 const getCapUrl = `${this.url}SERVICE=WFS&REQUEST=GetCapabilities&VERSION=${this.version}`;
                 const xml = new DOMParser().parseFromString(text, 'application/xml');
                 const errorElem = xml.querySelector('Exception');
+                if (!errorElem) { return; }
                 const errorCode = errorElem.getAttribute('exceptionCode');
                 const errorMessage = errorElem.querySelector('ExceptionText').textContent;
                 console.error(`Source ${this.typeName}: bad request when fetching data. Server says: "${errorCode}: ${errorMessage}". \nReviewing ${getCapUrl} may help.`, err);

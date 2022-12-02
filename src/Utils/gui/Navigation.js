@@ -85,7 +85,7 @@ class Navigation extends Widget {
 
 
     /**
-     * @param   {GlobeView}     view                                    The iTowns view the navigation should be linked
+     * @param   {GlobeView~GlobeView}     view                                    The iTowns view the navigation should be linked
                                                                         * to. For the moment, only `{@link GlobeView}`
                                                                         * is supported.
      * @param   {Object}        options                                 The navigation menu optional configuration.
@@ -253,6 +253,10 @@ class Navigation extends Widget {
         return button;
     }
 
+    /**
+     *
+     * @param   {string}    id              The unique id the created div should be given.
+     */
     addButtonBar(id) {
         const buttonBar = document.createElement('div');
         buttonBar.className = 'widget-button-bar';

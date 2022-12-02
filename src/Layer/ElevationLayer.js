@@ -20,6 +20,7 @@ import { RasterElevationTile } from 'Renderer/RasterTile';
  * ```
  * @property {number} colorTextureElevationMinZ - elevation minimum in `useColorTextureElevation` mode.
  * @property {number} colorTextureElevationMaxZ - elevation maximum in `useColorTextureElevation` mode.
+ * @extends RasterLayer
  */
 class ElevationLayer extends RasterLayer {
     /**
@@ -27,7 +28,6 @@ class ElevationLayer extends RasterLayer {
      * plane or globe view for example.
      *
      * @constructor
-     * @extends Layer
      *
      * @param {string} id - The id of the layer, that should be unique. It is
      * not mandatory, but an error will be emitted if this layer is added a

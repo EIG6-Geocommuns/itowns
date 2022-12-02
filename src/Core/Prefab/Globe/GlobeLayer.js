@@ -19,6 +19,7 @@ const scaledHorizonCullingPoint = new THREE.Vector3();
  * @property {boolean} isGlobeLayer - Used to checkout whether this layer is a
  * GlobeLayer. Default is true. You should not change this, as it is used
  * internally for optimisation.
+ * @extends TiledGeometryLayer
  */
 class GlobeLayer extends TiledGeometryLayer {
     /**
@@ -26,7 +27,6 @@ class GlobeLayer extends TiledGeometryLayer {
      * specific method for updating and subdivising its grid.
      *
      * @constructor
-     * @extends TiledGeometryLayer
      *
      * @param {string} id - The id of the layer, that should be unique. It is
      * not mandatory, but an error will be emitted if this layer is added a

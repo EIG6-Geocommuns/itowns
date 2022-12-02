@@ -379,7 +379,7 @@ export default {
      * @param      {View}  view    The camera view
      * @param      {Camera}  camera  The camera to get transform
      * @param      {THREE.Vector3} [target] - The optional target
-     * @return     {CameraUtils~CameraTransformOptions}  The transform camera looking at target
+     * @return     {CameraTransformOptions}  The transform camera looking at target
      */
     getTransformCameraLookingAtTarget(view, camera, target) {
         const rig = getRig(camera);
@@ -391,7 +391,7 @@ export default {
      *
      * @param      {View}  view    The camera view
      * @param      {Camera}  camera  The camera to transform
-     * @param      {CameraUtils~CameraTransformOptions|Extent}  params  The parameters
+     * @param      {CameraTransformOptions|Extent}  params  The parameters
      * @return     {Promise} promise with resolve final CameraUtils~CameraTransformOptions
      */
     transformCameraToLookAtTarget(view, camera, params = {}) {

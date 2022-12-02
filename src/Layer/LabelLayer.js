@@ -20,11 +20,11 @@ const _extent = new Extent('EPSG:4326', 0, 0, 0, 0);
  * @property {boolean} isLabelLayer - Used to checkout whether this layer is a
  * LabelLayer.  Default is true. You should not change this, as it is used
  * internally for optimisation.
+ * @extends Layer
  */
 class LabelLayer extends Layer {
     /**
      * @constructor
-     * @extends Layer
      *
      * @param {string} id - The id of the layer, that should be unique. It is
      * not mandatory, but an error will be emitted if this layer is added a

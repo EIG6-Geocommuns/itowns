@@ -44,6 +44,7 @@ class VectorTilesSource extends TMSSource {
      * Specification](https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/)
      * for more informations.
      * @param {string} [source.accessToken] - Mapbox access token
+     * @param {function} [source.filter] - TODO
      * @constructor
      */
     constructor(source) {

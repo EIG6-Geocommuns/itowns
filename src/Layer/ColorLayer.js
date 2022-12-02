@@ -34,6 +34,7 @@ import { deprecatedColorLayerOptions } from 'Core/Deprecated/Undeprecator';
  * * `2`: white color to invisible effect.
  * * `3`: custom shader effect (defined `ShaderChunk.customBodyColorLayer` and `ShaderChunk.customHeaderColorLayer`).
  * @property {number} effect_parameter - amount value used with effect applied on raster color.
+ * @extends RasterLayer
  */
 class ColorLayer extends RasterLayer {
     /**
@@ -42,7 +43,6 @@ class ColorLayer extends RasterLayer {
      * roads displayed.
      *
      * @constructor
-     * @extends Layer
      *
      * @param {string} id - The id of the layer, that should be unique. It is
      * not mandatory, but an error will be emitted if this layer is added a
@@ -55,6 +55,9 @@ class ColorLayer extends RasterLayer {
      * @param {Source} [config.source] - Description and options of the source.
      * @param {number} [config.magFilter] - How the texture is sampled when a texel covers more than one pixel. [see](https://threejs.org/docs/?q=texture#api/en/textures/Texture.magFilter)
      * @param {number} [config.minFilter] - How the texture is sampled when a texel covers less than one pixel. [see](https://threejs.org/docs/?q=texture#api/en/textures/Texture.minFilter)
+     * @param {Style} [config.style] - TODO[QB]
+     * @param {boolean?} [config.transparent] - TODO[QB]
+     * @param {boolean} [config.addLabelLayer] - See TODO[QB]
      * @param {number} [effect_type=0] - type effect to apply on raster color.
      * if `effect_type` equals:
      * * `0`: no special effect.
