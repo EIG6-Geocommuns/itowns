@@ -109,6 +109,7 @@
     "q": "^1.5.1",
     "replace-in-file": "^6.3.2",
     "three": "0.146.0",
+    "typescript": "^4.9.5",
     "url-polyfill": "^1.1.12",
     "webpack": "^5.72.1",
     "webpack-cli": "^4.9.2",
