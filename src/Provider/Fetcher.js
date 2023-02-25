@@ -156,8 +156,8 @@ export default {
      * see [the syntax for more information]{@link
      * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax}.
      *
-     * @return {Promise[]} An array of promises, containing all the files,
-     * organized by their extensions (see the example below).
+     * @return {Promise} A promise containing all the files, organized by their
+     * extensions (see the example below).
      *
      * @example
      * itowns.Fetcher.multiple('http://geo.server/shapefile', {

@@ -3,7 +3,7 @@ import Coordinates from 'Core/Geographic/Coordinates';
 import DEMUtils from 'Utils/DEMUtils';
 
 /**
- * @typedef     {object}    Camera~CAMERA_TYPE
+ * @typedef     {object}    CAMERA_TYPE
  * Stores the different types of camera usable in iTowns.
  *
  * @property    {number}    PERSPECTIVE     Perspective type of camera
@@ -94,7 +94,7 @@ class Camera {
      * @param   {object}                [options]                               Options for the camera.
      * @param   {THREE.Camera}          [options.cameraThree]                   A custom Three.js camera object to wrap
         * around.
-     * @param   {Camera~CAMERA_TYPE}    [options.type=CAMERA_TYPE.PERSPECTIVE]  The type of the camera. See {@link
+     * @param   {CAMERA_TYPE}    [options.type=CAMERA_TYPE.PERSPECTIVE]  The type of the camera. See {@link
         * CAMERA_TYPE}.
      * @constructor
      */
