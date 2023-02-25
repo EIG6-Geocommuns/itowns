@@ -435,7 +435,7 @@ class Extent {
     /**
      * Return the intersection of this extent with another one
      * @param {Extent} extent
-     * @returns {Boolean}
+     * @returns {Extent}
      */
     intersect(extent) {
         if (!this.intersectsExtent(extent)) {
@@ -645,7 +645,7 @@ class Extent {
     /**
      * subdivise extent by scheme.x on west-east and scheme.y on south-north.
      *
-     * @param      {Vector2}  [scheme=Vector2(2,2)]  The scheme to subdivise.
+     * @param      {THREE.Vector2}  [scheme=Vector2(2,2)]  The scheme to subdivise.
      * @return     {Array<Extent>}   subdivised extents.
      */
     subdivisionByScheme(scheme = defaultScheme) {

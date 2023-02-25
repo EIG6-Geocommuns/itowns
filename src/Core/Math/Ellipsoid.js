@@ -65,8 +65,8 @@ class Ellipsoid {
      * @param {number} position.x
      * @param {number} position.y
      * @param {number} position.z
-     * @param {Coordinate} [target] coordinate to copy result
-     * @returns {Coordinate} an object describing the coordinates on the reference ellipsoid, angles are in degree
+     * @param {Coordinates} [target] coordinate to copy result
+     * @returns {Coordinates} an object describing the coordinates on the reference ellipsoid, angles are in degree
      */
     cartesianToCartographic(position, target = new Coordinates('EPSG:4326', 0, 0, 0)) {
         // for details, see for example http://www.linz.govt.nz/data/geodetic-system/coordinate-conversion/geodetic-datum-conversions/equations-used-datum

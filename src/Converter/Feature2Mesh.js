@@ -156,7 +156,7 @@ function coordinatesToVertices(ptsIn, normals, target, zTranslation, offsetOut =
     }
 }
 
-/*
+/**
  * Add indices for the side faces.
  * We loop over the contour and create a side face made of two triangles.
  *
