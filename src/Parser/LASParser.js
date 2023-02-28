@@ -1,5 +1,155 @@
 import * as THREE from 'three';
 import { LASLoader } from '@loaders.gl/las';
+import { Binary, Las } from 'copc';
+
+import * as LazPerf from 'laz-perf';
+
+/** @type{LazPerf.LazPerf|null} */
+let lazPerf = null;
+
+/**
+ * @param {function(number, number):Promise.<Uint8Array>} get
+ */
+async function create(get) {
+    const header = Las.Header.parse(await get(0, Las.Constants.minHeaderLength));
+    const vlrs = await Las.Vlr.walk(get, header);
+
+    let wkt;
+    const wktVlr = Las.Vlr.find(vlrs, 'LASF_Projection', 2112);
+    if (wktVlr) {
+        wkt = Binary.toCString(await Las.Vlr.fetch(get, wktVlr));
+    }
+
+    let eb;
+    const ebVlr = Las.Vlr.find(vlrs, 'LASF_Spec', 4);
+    if (ebVlr) {
+        eb = Las.ExtraBytes.parse(await Las.Vlr.fetch(get, ebVlr));
+    }
+
+    return { header, vlrs, wkt, eb };
+}
+
+/**
+ * @param {function(number, number):Promise.<Uint8Array>} get
+ * @param {Las.Header} header - TODO: Minimize
+ * @param {Object} chunk
+ * @param {number} chunk.pointCount
+ * @param {number} chunk.pointDataOffset
+ * @param {number} chunk.pointDataLength
+ * @param {LazPerf.LazPerf} [lazPerf]
+ */
+async function loadPointDataBuffer(
+    get,
+    { pointDataRecordFormat, pointDataRecordLength },
+    { pointCount, pointDataOffset, pointDataLength },
+    lazPerf,
+) {
+    const compressed =
+        await get(pointDataOffset, pointDataOffset + pointDataLength);
+
+    return Las.PointData.decompressChunk(
+        compressed,
+        { pointCount, pointDataRecordFormat, pointDataRecordLength },
+        lazPerf,
+    );
+}
+
+/**
+ * @param {function(number, number):Promise.<Uint8Array>} get
+ * @param {Object} las
+ * @param {Las.Header} las.header
+ * @param {Las.ExtraBytes[]=} las.eb
+ * @param {Object} chunk
+ * @param {number} chunk.pointCount
+ * @param {number} chunk.pointDataOffset
+ * @param {number} chunk.pointDataLength
+ * @param {Object} [options]
+ * @param {LazPerf.LazPerf} [options.lazPerf]
+ */
+async function loadPointXYZ(get, las, chunk, options = {}) {
+    const buffer = await loadPointDataBuffer(get, las.header, chunk, options.lazPerf);
+    return Las.Extractor.create(las.header, las.eb);
+}
+
+/**
+ * @param {function(number, number):Promise.<Uint8Array>} get
+ * @param {Object} las
+ * @param {Las.Header} las.header
+ * @param {Las.ExtraBytes[]=} las.eb
+ * @param {Object} chunk
+ * @param {number} chunk.pointCount
+ * @param {number} chunk.pointDataOffset
+ * @param {number} chunk.pointDataLength
+ * @param {Object} [options]
+ * @param {LazPerf.LazPerf} [options.lazPerf]
+ */
+async function loadPointDataView(get, las, chunk, options = {}) {
+    const buffer = await loadPointDataBuffer(get, las.header, chunk, options.lazPerf);
+    return Las.View.create(buffer, las.header, las.eb);
+}
+
+/**
+ * @param {ArrayBuffer} data
+ */
+async function parse(data) {
+    if (!lazPerf) {
+        // /** @type{Partial<LazPerf.LazPerf>} */
+        // const lazPerfConfig = {
+        //     locateFile(_url, _scriptDirectory) {
+        //         console.log(`url: ${lazPerfURL}`);
+        //         return lazPerfURL;
+        //     },
+        // };
+
+        // lazPerf = await LazPerf.createLazPerf(lazPerfConfig);
+        lazPerf = await LazPerf.createLazPerf();
+    }
+
+    const view = new Uint8Array(data);
+    const get = (/** @type {number} */begin, /** @type {number} */ end) =>
+        Promise.resolve(view.subarray(begin, end));
+
+    const las = await create(get);
+
+    console.log(las.header);
+
+    const params = {
+        pointCount: las.header.pointCount,
+        pointDataOffset: las.header.pointDataOffset,
+        pointDataLength: las.header.pointDataRecordLength,
+    };
+
+    const dataView = await loadPointDataView(get, las, params, lazPerf);
+    const positionGetter = ['X', 'Y', 'Z'].map(dataView.getter);
+    function getPosition(index) {
+        return positionGetter.map(get => get(index));
+    }
+
+    if (dataView.dimensions.COLOR_TRUCMUCHE === undefined) {
+        console.log('COLOR_TRUCMUCHE PAS EXISTANT');
+    }
+
+    console.log(dataView.dimensions);
+    console.log(dataView.getter);
+
+    // const FloatArrayType = true ? Float64Array : Float32Array;
+    const pointCount = las.header.pointCount;
+    const positions = new Float32Array(pointCount * 3);
+    const colors = las.header.pointDataRecordFormat >= 2 ?
+        new Uint8Array(pointCount * 4) : null;
+    const intensities = new Uint16Array(pointCount);
+    const classifications = new Uint8Array(pointCount);
+
+    for (let i = 0; i < 3; i++) {
+        console.log(getPosition(i));
+        // positions[i * 3];
+        // positions[i * 3 + 1];
+        // positions[i * 3 + 2];
+
+        // intensities[i];
+        // classifications[i];
+    }
+}
 
 // See this document for LAS format specification
 // https://www.asprs.org/wp-content/uploads/2010/12/LAS_1_4_r13.pdf
@@ -32,6 +182,8 @@ export default {
      * header of the file is contained in `userData`.
      */
     parse(data, options = {}) {
+        console.error('LASPARSER');
+        parse(data);
         options.in = options.in || {};
         options.out = options.out || {};
         return LASLoader.parse(data, {
@@ -39,7 +191,19 @@ export default {
                 colorDepth: options.in.colorDepth || 'auto',
                 skip: options.out.skip || 1,
             },
+            worker: true,
+            reuseWorkers: false,
+            maxConcurrency: navigator.hardwareConcurrency - 1,
         }).then((parsedData) => {
+            // attributes
+            // attributes.COLOR_0: { value: Uint8Array() } // size: 4
+            // attributes.POSITION: { value: Float32Array() } // size: 3
+            // attributes.classification: { value: Uint8Array() } // size: 1
+            // attributes.intensity: { value: Uint16Array(192) } // size: 1
+            // header
+            // header.vertexCount = nb of points = loaderData.nbPoint
+            // header.boundingBox = Array[2][3] = loaderData.boudingBox
+            // loaderData = Header LAS obtenu avec las-perf
             const geometry = new THREE.BufferGeometry();
             geometry.userData = parsedData.loaderData;
             geometry.userData.vertexCount = parsedData.header.vertexCount;

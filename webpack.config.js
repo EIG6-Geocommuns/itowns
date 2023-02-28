@@ -78,6 +78,13 @@ module.exports = () => {
                     include,
                     use: babelLoaderOptions,
                 },
+                {
+                    test: /\.wasm$/,
+                    type: 'asset/resource',
+                    generator: {
+                        filename: 'static/laz-perf.wasm',
+                    },
+                },
             ],
         },
         plugins: [new ESLintPlugin({
