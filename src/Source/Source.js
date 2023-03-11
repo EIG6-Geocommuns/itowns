@@ -233,11 +233,11 @@ class Source extends InformationsData {
      * Tests if an extent is inside the source limits.
      *
      * @param {Extent} extent - Extent to test.
-
+     * @param {number} zoom - Zoom level to test.
      * @return {boolean} True if the extent is inside the limit, false otherwise.
      */
     // eslint-disable-next-line
-    extentInsideLimit(extent) {
+    extentInsideLimit(extent, zoom) {
         throw new Error('In extented Source, you have to implement the method extentInsideLimit!');
     }
 }
