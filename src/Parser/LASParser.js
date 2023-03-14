@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { LASLoader } from '@loaders.gl/las';
+import { getMeshBoundingBox } from '@loaders.gl/schema';
 import { Binary, Las } from 'copc';
 
 import * as LazPerf from 'laz-perf';
@@ -89,9 +90,78 @@ async function loadPointDataView(get, las, chunk, options = {}) {
 }
 
 /**
+ * @param {function(number, number):Promise.<Uint8Array>} get
+ * @param {Object} [options]
+ * @param {boolean} [options.fp64]
+ * @param {number|'auto'} [options.colorDepth]
+ */
+async function parseLAS(get, options = {}) {
+    const las = await create(get);
+    const dataView = await loadPointDataView(get, las, {
+        pointCount: las.header.pointCount,
+        pointDataOffset: las.header.pointDataOffset,
+        pointDataLength: las.header.pointDataRecordFormat,
+    });
+    const getters = Object.fromEntries(
+        Object.keys(dataView.dimensions).map(k => [k, dataView.getter(k)]),
+    );
+
+    // Initialize all
+    const total = las.header.pointCount;
+    const positions = new Float32Array(total * 3);
+    const colors = getters.Red ? new Uint8Array(total * 4) : null;
+    const intensities = new Uint16Array(total);
+    const classifications = new Uint8Array(total);
+
+    const loaderData = las.header;
+    const attributes = {
+        POSITION: { value: positions, size: 3 },
+        COLOR_0: { value: colors, size: 4 },
+        intensity: { value: intensities, size: 1 },
+        classification: { value: classifications, size: 1 },
+    };
+
+    const {
+        scale: [scaleX, scaleY, scaleZ],
+        offset: [offsetX, offsetY, offsetZ],
+    } = las.header;
+
+    for (let i = 0; i < dataView.pointCount; ++i) {
+        // TODO: Scale things
+        positions[i * 3] = getters.X(i) * scaleX + offsetX;
+        positions[i * 3 + 1] = getters.Y(i) * scaleY + offsetY;
+        positions[i * 3 + 2] = getters.Z(i) * scaleZ + offsetZ;
+
+        if (colors) {
+            // TODO: Two bytes color
+            colors[i * 4] = getters.Red(i) / 256;
+            colors[i * 4 + 1] = getters.Green(i) / 256;
+            colors[i * 4 + 2] = getters.Blue(i) / 256;
+
+            colors[i * 4 + 3] = 255;
+        }
+
+        intensities[i] = getters.Intensity(i);
+        classifications[i] = getters.Classification(i);
+    }
+
+    return {
+        loader: 'las',
+        loaderData,
+        header: {
+            vertexCount: las.header.pointCount,
+            boundingBox: getMeshBoundingBox(attributes),
+        },
+        attributes,
+        topology: 'point-list',
+        mode: 0, // GL.POINTS
+    };
+}
+
+/**
  * @param {ArrayBuffer} data
  */
-async function parse(data) {
+async function parse2(data) {
     if (!lazPerf) {
         // /** @type{Partial<LazPerf.LazPerf>} */
         // const lazPerfConfig = {
@@ -109,46 +179,7 @@ async function parse(data) {
     const get = (/** @type {number} */begin, /** @type {number} */ end) =>
         Promise.resolve(view.subarray(begin, end));
 
-    const las = await create(get);
-
-    console.log(las.header);
-
-    const params = {
-        pointCount: las.header.pointCount,
-        pointDataOffset: las.header.pointDataOffset,
-        pointDataLength: las.header.pointDataRecordLength,
-    };
-
-    const dataView = await loadPointDataView(get, las, params, lazPerf);
-    const positionGetter = ['X', 'Y', 'Z'].map(dataView.getter);
-    function getPosition(index) {
-        return positionGetter.map(get => get(index));
-    }
-
-    if (dataView.dimensions.COLOR_TRUCMUCHE === undefined) {
-        console.log('COLOR_TRUCMUCHE PAS EXISTANT');
-    }
-
-    console.log(dataView.dimensions);
-    console.log(dataView.getter);
-
-    // const FloatArrayType = true ? Float64Array : Float32Array;
-    const pointCount = las.header.pointCount;
-    const positions = new Float32Array(pointCount * 3);
-    const colors = las.header.pointDataRecordFormat >= 2 ?
-        new Uint8Array(pointCount * 4) : null;
-    const intensities = new Uint16Array(pointCount);
-    const classifications = new Uint8Array(pointCount);
-
-    for (let i = 0; i < 3; i++) {
-        console.log(getPosition(i));
-        // positions[i * 3];
-        // positions[i * 3 + 1];
-        // positions[i * 3 + 2];
-
-        // intensities[i];
-        // classifications[i];
-    }
+    return parseLAS(get);
 }
 
 // See this document for LAS format specification
@@ -182,19 +213,18 @@ export default {
      * header of the file is contained in `userData`.
      */
     parse(data, options = {}) {
-        console.error('LASPARSER');
-        parse(data);
         options.in = options.in || {};
         options.out = options.out || {};
-        return LASLoader.parse(data, {
-            las: {
-                colorDepth: options.in.colorDepth || 'auto',
-                skip: options.out.skip || 1,
-            },
-            worker: true,
-            reuseWorkers: false,
-            maxConcurrency: navigator.hardwareConcurrency - 1,
-        }).then((parsedData) => {
+        // return LASLoader.parse(data, {
+        //     las: {
+        //         colorDepth: options.in.colorDepth || 'auto',
+        //         skip: options.out.skip || 1,
+        //     },
+        //     worker: true,
+        //     reuseWorkers: false,
+        //     maxConcurrency: navigator.hardwareConcurrency - 1,
+        // }).then((parsedData) => {
+        return parse2(data).then((parsedData) => {
             // attributes
             // attributes.COLOR_0: { value: Uint8Array() } // size: 4
             // attributes.POSITION: { value: Float32Array() } // size: 3
@@ -204,6 +234,7 @@ export default {
             // header.vertexCount = nb of points = loaderData.nbPoint
             // header.boundingBox = Array[2][3] = loaderData.boudingBox
             // loaderData = Header LAS obtenu avec las-perf
+            console.log(parsedData.attributes.POSITION.value[0]);
             const geometry = new THREE.BufferGeometry();
             geometry.userData = parsedData.loaderData;
             geometry.userData.vertexCount = parsedData.header.vertexCount;
