@@ -106,6 +106,8 @@ async function loadPointDataView(get, las, chunk, options = {}) {
  * @returns {Promise<Object>}
  */
 async function parseLAS(arrayBuffer, options = {}) {
+    console.log('Starting parsing');
+
     const bytes = new Uint8Array(arrayBuffer);
     const header = Las.Header.parse(bytes);
     const pointData = await Las.PointData.decompressFile(bytes);
@@ -119,6 +121,9 @@ async function parseLAS(arrayBuffer, options = {}) {
 
     const view = Las.View.create(pointData, header, eb);
     const getPosition = ['X', 'Y', 'Z'].map(view.getter);
+    const getClassification = ['Classification'].map(view.getter);
+    const getIntensity = ['Intensity'].map(view.getter);
+    const getColor = ['Red', 'Green', 'Blue'].map(view.getter);
 
     const positions = new Float32Array(view.pointCount * 3);
     const colors = new Uint8Array(view.pointCount * 4);
@@ -132,17 +137,26 @@ async function parseLAS(arrayBuffer, options = {}) {
 
     for (let i = 0; i < view.pointCount; i++) {
         const [x, y, z] = getPosition.map(f => f(i)); // TODO
+        const [classication] = getClassification.map(f => f(i));
+        const [intensity] = getIntensity.map(f => f(i));
+        const [r, g, b] = getColor.map(f => f(i));
+
         positions[i * 3] = x;
         positions[i * 3 + 1] = y;
         positions[i * 3 + 2] = z;
 
-        colors[i * 4] = 0;
-        colors[i * 4 + 1] = 0;
-        colors[i * 4 + 3] = 0;
-        colors[i * 4 + 3] = 1;
+        colors[i * 4] = r;
+        colors[i * 4 + 1] = g;
+        colors[i * 4 + 2] = b;
 
-        intensities[i] = 1;
-        classifications[i] = 0;
+        // colors[i * 4] = r / 256;
+        // colors[i * 4 + 1] = g / 256;
+        // colors[i * 4 + 2] = b / 256;
+
+        colors[i * 4 + 3] = 255;
+
+        intensities[i] = intensity;
+        classifications[i] = classication;
     }
 
     return {

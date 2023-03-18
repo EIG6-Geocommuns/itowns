@@ -45,6 +45,9 @@ module.exports = () => {
         context: path.resolve(__dirname),
         resolve: {
             modules: [path.resolve(__dirname, 'src'), 'node_modules'],
+            alias: {
+                'fs': false,
+            },
         },
         entry: {
             itowns: [
