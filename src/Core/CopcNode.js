@@ -2,6 +2,10 @@ import * as THREE from 'three';
 import { Hierarchy } from 'copc';
 import PointCloudNode from 'Core/PointCloudNode';
 
+const size = new THREE.Vector3();
+const position = new THREE.Vector3();
+const translation = new THREE.Vector3();
+
 class CopcNode extends PointCloudNode {
     /**
      * Constructs a new instance of a COPC Octree node
@@ -50,11 +54,37 @@ class CopcNode extends PointCloudNode {
         });
     }
 
+    createChildAABB(node) {
+        // factor to apply, based on the depth difference (can be > 1)
+        const f = 2 ** (node.depth - this.depth);
+
+        // size of the child node bbox (Vector3), based on the size of the
+        // parent node, and divided by the factor
+        this.bbox.getSize(size).divideScalar(f);
+
+        // initialize the child node bbox at the location of the parent node bbox
+        node.bbox.min.copy(this.bbox.min);
+
+        // position of the parent node, if it was at the same depth than the
+        // child, found by multiplying the tree position by the factor
+        position.copy(this).multiplyScalar(f);
+
+        // difference in position between the two nodes, at child depth, and
+        // scale it using the size
+        translation.subVectors(node, position).multiply(size);
+
+        // apply the translation to the child node bbox
+        node.bbox.min.add(translation);
+
+        // use the size computed above to set the max
+        node.bbox.max.copy(node.bbox.min).add(size);
+    }
+
     async loadOctree() {
         const buffer = await this.fetch(this.entryOffset, this.entryLength);
-        const subtree = await Hierarchy.parse(new Uint8Array(buffer));
+        const hierarchy = await Hierarchy.parse(new Uint8Array(buffer));
 
-        const node = subtree.nodes[this.id];
+        const node = hierarchy.nodes[this.id];
         if (!node) {
             return Promise.reject('[CopcNode]: entry not found in hierarchy');
         }
@@ -62,6 +92,26 @@ class CopcNode extends PointCloudNode {
         this.numPoints = node.pointCount;
         this.entryOffset = node.pointDataOffset;
         this.entryLength = node.pointDataLength;
+
+        const stack = [];
+        stack.push(this);
+
+        while (stack.length) {
+            const node = stack.shift();
+            const depth = node.depth + 1;
+            const x = node.x * 2;
+            const y = node.y * 2;
+            const z = node.z * 2;
+
+            node.findAndCreateChild(depth, x,     y,     z,     hierarchy, stack);
+            node.findAndCreateChild(depth, x + 1, y,     z,     hierarchy, stack);
+            node.findAndCreateChild(depth, x,     y + 1, z,     hierarchy, stack);
+            node.findAndCreateChild(depth, x + 1, y + 1, z,     hierarchy, stack);
+            node.findAndCreateChild(depth, x,     y,     z + 1, hierarchy, stack);
+            node.findAndCreateChild(depth, x + 1, y,     z + 1, hierarchy, stack);
+            node.findAndCreateChild(depth, x,     y + 1, z + 1, hierarchy, stack);
+            node.findAndCreateChild(depth, x + 1, y + 1, z + 1, hierarchy, stack);
+        }
     }
 
     /**
@@ -71,9 +121,9 @@ class CopcNode extends PointCloudNode {
      * @param {number} y
      * @param {number} z
      * @param {Hierarchy.Subtree} hierarchy
-     * @returns {CopcNode | undefined}
+     * @param {CopcNode[]} stack
      */
-    findAndCreateChild(depth, x, y, z, hierarchy) {
+    findAndCreateChild(depth, x, y, z, hierarchy, stack) {
         const id = `${this.depth}-${this.x}-${this.y}-${this.z}`;
 
         let pointCount;
@@ -93,7 +143,7 @@ class CopcNode extends PointCloudNode {
             byteSize = page.pageLength;
         }
 
-        return new CopcNode(
+        const child = new CopcNode(
             depth,
             x,
             y,
@@ -103,18 +153,16 @@ class CopcNode extends PointCloudNode {
             this.layer,
             pointCount,
         );
+        this.add(child);
+        stack.push(child);
     }
 
     async load() {
-        console.log('[load]: check if octree loaded');
         if (!this.octreeIsLoaded) {
             await this.loadOctree();
         }
 
-        console.log('[load]: octree is loaded');
         const buffer = await this.fetch(this.entryOffset, this.entryLength);
-        console.log('[load]: buffer is fetched');
-        console.log(buffer);
         const geometry = await this.layer.source.parse(buffer, {
             out: this.layer,
             in: {
@@ -122,8 +170,6 @@ class CopcNode extends PointCloudNode {
                 pointCount: this.numPoints,
             },
         });
-        console.log('[load]: geometry is parsed');
-        console.log(geometry);
 
         return geometry;
     }

@@ -24,6 +24,10 @@ class CopcLayer extends PointCloudLayer {
             return this.root.loadOctree().then(resolve);
         });
     }
+
+    get spacing() {
+        return this.source.info.spacing;
+    }
 }
 
 export default CopcLayer;
