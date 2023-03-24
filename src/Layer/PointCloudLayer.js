@@ -97,6 +97,7 @@ function changeIntensityRange(layer) {
  * @property {number} [maxIntensityRange=1] - The maximal intensity of the
  * layer. Changing this value will affect the material, if it has the
  * corresponding uniform. The value is normalized between 0 and 1.
+ * @extends GeometryLayer
  */
 class PointCloudLayer extends GeometryLayer {
     /**
@@ -105,7 +106,6 @@ class PointCloudLayer extends GeometryLayer {
      * directly, but rather implemented using `extends`.
      *
      * @constructor
-     * @extends GeometryLayer
      *
      * @param {string} id - The id of the layer, that should be unique. It is
      * not mandatory, but an error will be emitted if this layer is added a
@@ -210,6 +210,13 @@ class PointCloudLayer extends GeometryLayer {
         // pick the best bounding box
         const bbox = (elt.tightbbox ? elt.tightbbox : elt.bbox);
         elt.visible = context.camera.isBox3Visible(bbox, this.object3d.matrixWorld);
+        console.error('UPDATE - CULLING');
+        console.error(context.camera);
+        console.error(bbox);
+        console.error(this.object3d.matrixWorld);
+        console.error(elt.visible);
+        console.error();
+
         if (!elt.visible) {
             markForDeletion(elt);
             return;

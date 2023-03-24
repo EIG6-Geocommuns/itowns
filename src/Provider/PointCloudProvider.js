@@ -36,7 +36,7 @@ export default {
             addPickingAttribute(points);
             points.frustumCulled = false;
             points.matrixAutoUpdate = false;
-            if (!layer.isEntwinePointTileLayer) {
+            if (!layer.isEntwinePointTileLayer && !layer.isCopcLayer) {
                 points.position.copy(node.bbox.min);
                 points.scale.copy(layer.scale);
             }

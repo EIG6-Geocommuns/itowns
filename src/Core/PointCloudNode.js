@@ -21,7 +21,7 @@ class PointCloudNode extends THREE.EventDispatcher {
     load() {
         // Query octree/HRC if we don't have children potreeNode yet.
         if (!this.octreeIsLoaded) {
-            this.loadOctree();
+            this.loadOctree(); // TODO: What if check of children when resolving ?
         }
 
         return this.layer.source.fetcher(this.url, this.layer.source.networkOptions)

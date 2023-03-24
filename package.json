@@ -82,6 +82,7 @@
     "@babel/plugin-transform-runtime": "^7.18.0",
     "@babel/preset-env": "^7.18.0",
     "@babel/register": "^7.17.7",
+    "@types/proj4": "^2.5.2",
     "@types/workerpool": "^6.1.1",
     "babel-inline-import-loader": "^1.0.1",
     "babel-loader": "^8.2.5",

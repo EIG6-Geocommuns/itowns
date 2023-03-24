@@ -1,0 +1,86 @@
+<html>
+    <head>
+        <title>Itowns - COPC loader</title>
+
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <style type="text/css">
+            #description {
+                z-index: 2;
+                left: 10px;
+            }
+        </style>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.6/dat.gui.min.js"></script>
+    </head>
+    <body>
+        <div id="description">Specify the URL of a COPC file to load:
+            <input type="text" id="url" />
+            <button onclick="readURL()">Load</button>
+            <div id="share"></div>
+        </div>
+        <div id="viewerDiv" />
+
+        <script src="../dist/itowns.js"></script>
+        <script src="js/GUI/LoadingScreen.js"></script>
+        <script src="../dist/debug.js"></script>
+        <script type="text/javascript">
+            itowns.proj4.defs("EPSG:3946","+proj=lcc +lat_0=46 +lon_0=3 +lat_1=45.25 +lat_2=46.75 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs");
+
+            var gui = new dat.GUI();
+            var viewerDiv = document.getElementById('viewerDiv');
+            viewerDiv.style.display = 'block';
+            var view = new itowns.View('EPSG:3946', viewerDiv);
+            view.mainLoop.gfxEngine.renderer.setClearColor(0xcccccc);
+
+            var controls = new itowns.FirstPersonControls(view, { focusOnClick: true });
+
+            function onLayerReady() {
+                var camera = view.camera.camera3D;
+
+                var lookAt = new itowns.THREE.Vector3();
+                var size = new itowns.THREE.Vector3();
+                layer.root.bbox.getSize(size);
+                layer.root.bbox.getCenter(lookAt);
+
+                camera.far = 2.0 * size.length();
+
+                var position = layer.root.bbox.min.clone().add(size.multiply({ x: 0, y: 0, z: size.x / size.z }));
+
+                camera.position.copy(position);
+                camera.lookAt(lookAt);
+
+                view.notifyChange(camera);
+            }
+
+
+            function readURL() {
+                var url = document.getElementById('url').value;
+
+                if (url) {
+                    loadCOPC(url);
+                }
+            }
+
+            function loadCOPC(url) {
+                source = new itowns.CopcSource({ url });
+
+                // if (layer) {
+                //     view.removeLayer('COPC');
+                //     view.notifyChange();
+                // }
+
+                layer = new itowns.CopcLayer('COPC', {
+                    source,
+                    crs: view.referenceCrs,
+                });
+                view.addLayer(layer).then(onLayerReady);
+                debug.PotreeDebug.initTools(view, layer, gui);
+            }
+        </script>
+    </body>
+</html>
+

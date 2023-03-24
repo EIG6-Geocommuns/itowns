@@ -141,7 +141,7 @@ class Source extends InformationsData {
         this.isVectorSource = (source.parser || supportedParsers.get(source.format)) != undefined;
         this.networkOptions = source.networkOptions || { crossOrigin: 'anonymous' };
         this.attribution = source.attribution;
-        this.whenReady = Promise.resolve();
+        this.whenReady = Promise.resolve(this);
         this._featuresCaches = {};
         if (source.extent && !(source.extent.isExtent)) {
             this.extent = new Extent(this.crs, source.extent);
