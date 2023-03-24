@@ -1,15 +1,35 @@
-import { Copc } from 'copc';
+import { Binary, Info, Las } from 'copc';
 import Fetcher from 'Provider/Fetcher';
 import LASzipParser from 'Parser/LASzipParser';
 import Source from 'Source/Source';
 
 /**
- * @param {string} url
- * @param {RequestInit} [options]
+ * @param {function(number, number):Promise<Uint8Array>} fetcher
  */
-async function bytes(url, options = {}) {
-    const buffer = await Fetcher.arrayBuffer(url, options);
-    return buffer;
+async function getHeaders(fetcher) {
+    const header =
+        Las.Header.parse(await fetcher(0, Las.Constants.minHeaderLength));
+    const vlrs = await Las.Vlr.walk(fetcher, header);
+
+    // info: required by COPC
+    const infoVlr = Las.Vlr.find(vlrs, 'copc', 1);
+    if (!infoVlr) { return Promise.reject('COPC info VLR is required'); }
+    const info = Info.parse(await Las.Vlr.fetch(fetcher, infoVlr));
+
+    // OGC Coordinate System WKT: required by LAS1.4
+    const wktVlr = Las.Vlr.find(vlrs, 'LASF_Projection', 2112);
+    if (!wktVlr) { return Promise.reject('LAS1.4 WKT VLR is required'); }
+    const wkt = Binary.toCString(await Las.Vlr.fetch(fetcher, wktVlr));
+
+    // Extra bytes: optional by LAS1.4
+    const ebVlr = Las.Vlr.find(vlrs, 'LASF_Spec', 4);
+    const eb = ebVlr ?
+        Las.ExtraBytes.parse(await Las.Vlr.fetch(fetcher, ebVlr)) :
+        [];
+
+    // TODO: Other VLRs?
+
+    return { header, info, wkt, eb };
 }
 
 /**
@@ -27,7 +47,11 @@ async function bytes(url, options = {}) {
  */
 class CopcSource extends Source {
     /**
-     * @param {Object} config - TODO
+     * @param {Object} config - Source configuration
+     * @param {string} config.url - URL of the COPC ressource.
+     * @param {RequestInit} [config.networkOptions] - Fetch options (passed
+     * directly to `fetch()`), see [the syntax for more information]{@link
+     * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax}.
      */
     constructor(config) {
         super(config);
@@ -35,7 +59,7 @@ class CopcSource extends Source {
         this.isCopcSource = true;
 
         this.parse = LASzipParser.parseChunk;
-        this.fetcher = bytes;
+        this.fetcher = Fetcher.arrayBuffer;
 
         const get = (/** @type {number} */ begin, /** @type {number} */ end) =>
             this.fetcher(this.url, {
@@ -45,11 +69,12 @@ class CopcSource extends Source {
                     range: `bytes=${begin}-${end - 1}`,
                 },
             }).then(buffer => new Uint8Array(buffer));
-        this.whenReady = Copc.create(get).then((copc) => {
-            // TODO: Use projection definition in `copc.wkt` if present
+        this.whenReady = getHeaders(get).then((metadata) => {
+            this.header = metadata.header;
+            this.info = metadata.info;
+            this.eb = metadata.eb;
 
-            this.spacing = copc.info.spacing;
-            this.copc = copc;
+            // TODO: use projection definition in `metadata.wkt`
 
             return this;
         });

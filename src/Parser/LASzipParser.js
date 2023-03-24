@@ -1,4 +1,4 @@
-import { Copc, Hierarchy, Las } from 'copc';
+import { Las } from 'copc';
 import * as THREE from 'three';
 
 /**
@@ -69,21 +69,25 @@ function parseView(view, header) {
     };
 }
 
+
+// TODO: options.in and options.out for input options and output options
 /**
  * Parse a LASzip compressed chunk and return the corresponding
  * `THREE.BufferGeometry`.
  *
  * @param {ArrayBuffer} data - The chunk of compressed point data to parse
- * @param {Object} options - Options to give to the parse
- * @param {Las.Header} options.header - TODO: Header
- * @param {Las.ExtraBytes[]} options.eb - TODO: ExtraBytes
- * @param {number} options.pointCount - TODO
+ * @param {Object} options - Options to give to the parser
+ * @param {Object} options.in - Options to the input of the parser
+ * @param {Las.Header} options.in.header - TODO: Header
+ * @param {Las.ExtraBytes[]} [options.in.eb] - TODO: ExtraBytes
+ * @param {number} options.in.pointCount - TODO
  * record
  */
-async function parseChunk(data, { header, pointCount, eb }) {
-    const bytes = new Uint8Array(data);
-
+async function parseChunk(data, options) {
+    const { header, pointCount, eb } = options.in;
     const { pointDataRecordFormat, pointDataRecordLength } = header;
+
+    const bytes = new Uint8Array(data);
     const buffer = await Las.PointData.decompressChunk(bytes, {
         pointCount,
         pointDataRecordFormat,
@@ -113,16 +117,67 @@ async function parseChunk(data, { header, pointCount, eb }) {
         geometry.setAttribute('color', colorBuffer);
     }
 
-    // geometry.boundingBox = new THREE.Box3().setFromBufferAttribute(positionBuffer);
     geometry.computeBoundingBox();
-    console.log('PointCount ', view.pointCount);
-    console.log('Geometry attributes ', geometry.attributes.position.array.length);
-    console.log(geometry.boundingBox);
-    console.log(attrs.position);
     return geometry;
 }
 
-
+/**
+ * @module LASzipParser
+ *
+ */
 export default {
-    parseChunk,
+    /**
+     * @typedef {Las.Header} Header
+     * @property {number} lol
+     */
+
+    /**
+     * Parse a LASzip compressed chunk and return the corresponding
+     * `THREE.BufferGeometry`.
+     *
+     * @param {ArrayBuffer} data - The chunk of compressed point data to parse
+     * @param {Object} options - Options to give to the parser
+     * @param {Object} options.in - Options to the input of the parser
+     * @param {Header} options.in.header - TODO: Header
+     * @param {Las.ExtraBytes[]} [options.in.eb] - TODO: ExtraBytes
+     * @param {number} options.in.pointCount - TODO
+     * record
+     */
+    async parseChunk(data, options) {
+        const { header, pointCount, eb } = options.in;
+        const { pointDataRecordFormat, pointDataRecordLength } = header;
+
+        const bytes = new Uint8Array(data);
+        const buffer = await Las.PointData.decompressChunk(bytes, {
+            pointCount,
+            pointDataRecordFormat,
+            pointDataRecordLength,
+        });
+        // TODO: Filter included fields
+        const view = Las.View.create(buffer, header, eb);
+        const attrs = parseView(view, header);
+
+        const geometry = new THREE.BufferGeometry();
+        geometry.userData = header;
+        // TODO: Generic pointCount for compressed buffer *and* file
+        geometry.userData.vertexCount = view.pointCount;
+
+        const positionBuffer = new THREE.BufferAttribute(attrs.position, 3, false);
+        geometry.setAttribute('position', positionBuffer);
+
+        const intensityBuffer = new THREE.BufferAttribute(attrs.intensity, 1, true);
+        geometry.setAttribute('intensity', intensityBuffer);
+
+        // TODO: Shall it be normalized?
+        const classificationBuffer = new THREE.BufferAttribute(attrs.classification, 1, true);
+        geometry.setAttribute('classification', classificationBuffer);
+
+        if (attrs.color) {
+            const colorBuffer = new THREE.BufferAttribute(attrs.color, 4, true);
+            geometry.setAttribute('color', colorBuffer);
+        }
+
+        geometry.computeBoundingBox();
+        return geometry;
+    },
 };

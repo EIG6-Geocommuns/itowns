@@ -18,6 +18,7 @@ class EntwinePointTileLayer extends PointCloudLayer {
      * Constructs a new instance of Entwine Point Tile layer.
      *
      * @constructor
+     * @extends PointCloudLayer
      *
      * @example
      * // Create a new point cloud layer
@@ -55,9 +56,6 @@ class EntwinePointTileLayer extends PointCloudLayer {
             this.root.bbox.max.fromArray(this.source.boundsConforming, 3);
 
             this.extent = Extent.fromBox3(config.crs || 'EPSG:4326', this.root.bbox);
-            console.log('COPC Layer');
-            console.log(this.scale);
-            console.log();
             return this.root.loadOctree().then(resolve);
         });
     }

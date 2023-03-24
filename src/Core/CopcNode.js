@@ -12,11 +12,7 @@ class CopcNode extends PointCloudNode {
      * @param {number} z - TODO
      * @param {number} entryOffset - TODO
      * @param {number} entryLength - TODO
-     * @param {Object} layer - TODO
-     * @param {Object} layer.source
-     * @param {string} layer.source.url
-     * @param {function(string,RequestInit):ArrayBuffer} layer.source.fetcher
-     * @param {RequestInit} layer.source.networkOptions
+     * @param {*} layer - TODO
      * @param {number} [numPoints=0] - TODO
      */
     constructor(depth, x, y, z, entryOffset, entryLength, layer, numPoints = 0) {
@@ -55,15 +51,9 @@ class CopcNode extends PointCloudNode {
     }
 
     async loadOctree() {
-        const buffer = await this.layer.source.fetcher(this.layer.source.url, {
-            ...this.layer.source.networkOptions,
-            headers: {
-                ...this.layer.source.networkOptions.headers,
-                range: `bytes=${this.entryOffset}-${this.entryOffset + this.entryLength - 1}`,
-            },
-        });
-
+        const buffer = await this.fetch(this.entryOffset, this.entryLength);
         const subtree = await Hierarchy.parse(new Uint8Array(buffer));
+
         const node = subtree.nodes[this.id];
         if (!node) {
             return Promise.reject('[CopcNode]: entry not found in hierarchy');
@@ -127,10 +117,10 @@ class CopcNode extends PointCloudNode {
         console.log(buffer);
         const geometry = await this.layer.source.parse(buffer, {
             out: this.layer,
-            in: this.layer.source,
-            header: this.layer.source.copc.header,
-            pointCount: this.numPoints,
-            eb: this.layer.source.copc.eb,
+            in: {
+                ...this.layer.source,
+                pointCount: this.numPoints,
+            },
         });
         console.log('[load]: geometry is parsed');
         console.log(geometry);
