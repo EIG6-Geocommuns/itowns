@@ -1,6 +1,6 @@
 {
   "name": "itowns-geocommuns",
-  "version": "2.39.0-rev3",
+  "version": "2.39.0-rev4",
   "description": "A JS/WebGL framework for 3D geospatial data visualization",
   "main": "lib/Main.js",
   "exports": {
