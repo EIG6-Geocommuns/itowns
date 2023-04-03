@@ -157,43 +157,11 @@ class StateControl extends THREE.EventDispatcher {
         this._view = view;
         this._domElement = view.domElement;
 
-        let enabled = true;
-        Object.defineProperty(this, 'enabled', {
-            get: () => enabled,
-            set: (value) => {
-                if (!value) {
-                    this.onKeyUp();
-                    this.onPointerUp();
-                }
-                enabled = value;
-            },
-        });
-
-        // Set to true to disable use of the keys
-        let enableKeys = true;
-        Object.defineProperty(this, 'enableKeys', {
-            get: () => enableKeys,
-            set: (value) => {
-                if (!value) {
-                    this.onKeyUp();
-                }
-                enableKeys = value;
-            },
-        });
+        this.enabled = true;
+        this.enableKeys = true;
 
         this.NONE = {};
-
-        let currentState = this.NONE;
-        Object.defineProperty(this, 'currentState', {
-            get: () => currentState,
-            set: (newState) => {
-                if (currentState !== newState) {
-                    const previous = currentState;
-                    currentState = newState;
-                    this.dispatchEvent({ type: 'state-changed', viewCoords, previous });
-                }
-            },
-        });
+        this.currentState = this.NONE;
 
         // TODO : the 4 next properties should be made private when ES6 allows it
         this._clickTimeStamp = 0;
@@ -224,6 +192,46 @@ class StateControl extends THREE.EventDispatcher {
 
         this.setFromOptions(options);
     }
+
+    get enabled() {
+        return this.enabled;
+    }
+
+    set enabled(value) {
+        if (!value) {
+            this.onKeyUp();
+            this.onPointerUp();
+        }
+        this.enabled = value;
+    }
+
+    get enableKeys() {
+        return this.enableKeys;
+    }
+
+    /**
+     * Set to true to disable use of the keys
+     * @param {boolean} value
+     */
+    set enableKeys(value) {
+        if (!value) {
+            this.onKeyUp();
+        }
+        this.enableKeys = value;
+    }
+
+    get currentState() {
+        return this.currentState;
+    }
+
+    set currentState(newState) {
+        if (this.currentState !== newState) {
+            const previous = this.currentState;
+            this.currentState = newState;
+            this.dispatchEvent({ type: 'state-changed', viewCoords, previous });
+        }
+    }
+
 
     /**
      * get the state corresponding to the mouse button and the keyboard key. If the input relates to a trigger - a

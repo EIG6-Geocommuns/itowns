@@ -92,10 +92,7 @@ class Layer extends THREE.EventDispatcher {
 
         Object.assign(this, config);
 
-        Object.defineProperty(this, 'id', {
-            value: id,
-            writable: false,
-        });
+        this.id = id;
 
         // Default properties
         this.options = config.options || {};
@@ -143,6 +140,10 @@ class Layer extends THREE.EventDispatcher {
 
         // TODO: verify but this.source.filter seems be always undefined.
         this.filter = this.filter || this.source.filter;
+    }
+
+    get id() {
+        return this.id;
     }
 
     addInitializationStep() {
